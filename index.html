@@ -4,214 +4,191 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Action Verbs -- Emoji Match (Grade 1)</title>
+  <title>शब्द ओळख गेम -- पहिला वर्ग (10 शब्द)</title>
   <style>
-    :root{--bg:#f5f7fb;--card:#ffffff;--accent:#4a90e2;--correct:#28a745;--wrong:#e34850}
-    body{font-family: 'Segoe UI', Roboto, Arial, sans-serif;background:var(--bg);margin:0;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px}
-    .container{max-width:920px;width:100%}
-    header{display:flex;justify-content:space-between;align-items:center}
-    h1{font-size:1.6rem;margin:0;color:#133;}
-    .controls{display:flex;gap:8px;align-items:center}
-    button, .emoji-btn{cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-size:16px;background:var(--card);box-shadow:0 6px 14px rgba(10,20,40,0.06)}
-    .play-btn{background:linear-gradient(180deg,var(--accent),#356fc3);color:#fff}
-    .panel{background:var(--card);padding:18px;border-radius:14px;box-shadow:0 6px 18px rgba(10,20,40,0.06)}
-    .verb-area{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px}
-    .round{font-weight:700;color:#444}
-    .big-verb{font-size:2.8rem;font-weight:800}
-    .options{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;width:100%;padding:12px}
-    .emoji-btn{font-size:34px;padding:20px;background:linear-gradient(180deg,#fff,#f6f8ff);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:110px}
-    .emoji-label{font-size:14px;margin-top:8px;color:#333}
-    .status{height:36px;display:flex;align-items:center;gap:10px}
-    .score{font-weight:700}
-    .feedback{padding:12px;border-radius:10px;color:#fff;display:inline-block}
+    body{font-family: system-ui, -apple-system, 'Noto Sans Devanagari', sans-serif; padding:18px; background:#f7f9fc; color:#1f2937}
+    .card{max-width:760px;margin:18px auto;background:white;border-radius:12px;box-shadow:0 6px 18px rgba(31,41,55,0.08);padding:20px}
+    h1{font-size:1.5rem;margin:0 0 8px}
+    p.lead{margin:0 0 18px;color:#374151}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    button{padding:10px 14px;border-radius:10px;border:0;background:#2563eb;color:white;font-weight:600;cursor:pointer}
+    button.secondary{background:#f3f4f6;color:#111827}
+    .options{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+    .opt{padding:14px;border-radius:10px;border:2px solid #e5e7eb;background:#fff;cursor:pointer;font-size:1.2rem; text-align:center}
+    .status{margin-top:14px;font-weight:700}
+    .score{float:right;font-weight:700}
     .hidden{display:none}
-    footer{font-size:13px;color:#666}
-    @media (max-width:520px){.big-verb{font-size:2rem}.emoji-btn{font-size:28px;padding:14px;min-height:92px}}
+    .footer{margin-top:18px;font-size:0.9rem;color:#6b7280}
+    .kbd{background:#111827;color:white;padding:6px 8px;border-radius:6px;font-size:0.85rem}
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Action Verbs -- Emoji Match (Grade 1)</h1>
-      <div class="controls">
-        <button id="play" class="play-btn">▶ Play Verb</button>
-        <button id="showAnswer">Show Answer</button>
-        <button id="next">Next</button>
-      </div>
-    </header><main class="panel">
-  <div class="verb-area">
-    <div class="round">Round <span id="roundNo">1</span> / <span id="totalRounds">12</span></div>
-    <div class="big-verb" id="verbText">--</div>
-    <div class="status">
-      <div class="score">Score: <span id="score">0</span></div>
-      <div id="feedback" class="feedback hidden"></div>
-    </div>
-  </div>
+  <div class="card">
+    <h1>शब्द ओळख -- पहिला वर्ग</h1>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <p class="lead">आवाज ऐका आणि योग्य शब्द निवडा. एकूण 10 प्रश्न.</p>
+      <div class="score">स्कोअर: <span id="score">0</span>/10</div>
+    </div><div class="controls">
+  <button id="playBtn">आवाज वजा (Play)</button>
+  <button id="repeatBtn" class="secondary">पुन्हा ऐका</button>
+  <button id="nextBtn" class="secondary hidden">पुढचे</button>
+  <button id="restartBtn" class="secondary">पुनः सुरुवात</button>
+</div>
 
+<div id="questionArea">
+  <div style="font-size:1.05rem;color:#374151">खालील पर्यायांपैकी एक निवडा:</div>
   <div class="options" id="options"></div>
-</main>
+  <div class="status" id="status"></div>
+</div>
 
-<footer>
-  Instructions: Click <strong>Play Verb</strong> to hear the verb. Tap the emoji that matches the action. Correct -- you'll hear praise and get a point. Wrong -- try again. Works in MIT App Inventor with TextToSpeech component (see blocks).
-</footer>
+<div class="footer">
+  टिप: या वेबपेजवर टेक्स्ट-टू-स्पीच ब्राउझरद्वारे चालवते. मराठी आवाज उपलब्ध नसेल तर ब्राउझर/ओएस मधील हिंदी (hi-IN) किंवा इंग्रजी वापरेल. चांगले अनुभवासाठी Chrome/Edge वापरा.
+  <div style="margin-top:6px">फाईल जतन करण्यासाठी: या पृष्ठाचे समस्त कोड कॉपी करून .html फाईल म्हणून सेव्ह करा आणि ब्राउझरमध्ये उघडा.</div>
+</div>
 
-  </div>  <script>
-    // Word bank: verb -> emoji choices
-    const WORDS = [
-      {verb:'jump', emoji:'🤸‍♂️'},
-      {verb:'run', emoji:'🏃‍♀️'},
-      {verb:'clap', emoji:'👏'},
-      {verb:'eat', emoji:'🍽️'},
-      {verb:'sleep', emoji:'😴'},
-      {verb:'swim', emoji:'🏊‍♂️'},
-      {verb:'dance', emoji:'💃'},
-      {verb:'write', emoji:'✍️'},
-      {verb:'draw', emoji:'🖍️'},
-      {verb:'sing', emoji:'🎤'},
-      {verb:'sit', emoji:'🪑'},
-      {verb:'laugh', emoji:'😂'}
-    ];
+  </div><script>
+// शब्दांचा संच (10 शब्द) -- सरळ, पहिल्या वर्गासाठी
+const lessons = [
+  {word:'आम', choices:['आम','घर','पक्षी']},
+  {word:'घर', choices:['पाय','घर','झाड']},
+  {word:'पाणी', choices:['मावशी','पाणी','दुकान']},
+  {word:'फळ', choices:['फळ','पुस्तक','कविता']},
+  {word:'मित्र', choices:['सोपं','मित्र','सूर्य']},
+  {word:'बाळ', choices:['बाळ','रिंगण','घोडा']},
+  {word:'शाळा', choices:['पंखा','शाळा','नदी']},
+  {word:'शेफळी', choices:['शेफळी','किताब','आकाश']},
+  {word:'बंदर', choices:['वडील','बंदर','गोंद']},
+  {word:'पुस्तक', choices:['दुध','पुस्तक','गाडी']}
+];
 
-    let order = shuffle(Array.from({length:WORDS.length},(_,i)=>i));
-    let round = 0; let score = 0; const totalRounds = WORDS.length;
+let order = shuffle(Array.from({length:lessons.length},(_,i)=>i));
+let idx = 0;
+let score = 0;
+let answered = false;
 
-    const playBtn = document.getElementById('play');
-    const optionsEl = document.getElementById('options');
-    const verbText = document.getElementById('verbText');
-    const roundNo = document.getElementById('roundNo');
-    const totalRoundsEl = document.getElementById('totalRounds');
-    const scoreEl = document.getElementById('score');
-    const feedbackEl = document.getElementById('feedback');
-    const nextBtn = document.getElementById('next');
-    const showAnswerBtn = document.getElementById('showAnswer');
+const playBtn = document.getElementById('playBtn');
+const repeatBtn = document.getElementById('repeatBtn');
+const nextBtn = document.getElementById('nextBtn');
+const restartBtn = document.getElementById('restartBtn');
+const optionsDiv = document.getElementById('options');
+const statusDiv = document.getElementById('status');
+const scoreSpan = document.getElementById('score');
 
-    totalRoundsEl.textContent = totalRounds;
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
 
-    function startRound(){
-      feedbackEl.classList.add('hidden');
-      const idx = order[round];
-      const item = WORDS[idx];
-      verbText.textContent = item.verb;
-      roundNo.textContent = round+1;
+function speak(text){
+  const synth = window.speechSynthesis;
+  if(!synth){
+    alert('तुमच्या ब्राउझरमध्ये SpeechSynthesis उपलब्ध नाही. Chrome किंवा Edge वापरून पहा.');
+    return;
+  }
+  synth.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  // मागे mr-IN वापरून प्रयत्न, नसेल तर hi-IN
+  utter.lang = 'mr-IN';
+  // fallback voice selection: try to pick a Marathi or Hindi voice if available
+  const voices = synth.getVoices();
+  if(voices && voices.length){
+    let v = voices.find(v=>v.lang && v.lang.startsWith('mr')) || voices.find(v=>v.lang && v.lang.startsWith('hi')) || voices[0];
+    if(v) utter.voice = v;
+  }
+  // slower rate for clearer pronunciation for kids
+  utter.rate = 0.9;
+  synth.speak(utter);
+}
 
-      const distractors = WORDS.filter((_,i)=>i!==idx).slice();
-      shuffle(distractors);
-      const choices = [item, distractors[0], distractors[1], distractors[2]];
-      shuffle(choices);
+function playTone(type){
+  // success or fail beep using WebAudio
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine';
+    o.frequency.value = (type==='success')?880:220;
+    g.gain.value = 0.0001;
+    const now = ctx.currentTime;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.2, now + 0.02);
+    o.start(now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+    o.stop(now + 0.55);
+  }catch(e){/* some browsers require user gesture; ignore */}
+}
 
-      optionsEl.innerHTML = '';
-      choices.forEach(c=>{
-        const btn = document.createElement('button');
-        btn.className = 'emoji-btn';
-        btn.innerHTML = `<div class="emoji">${c.emoji}</div><div class="emoji-label">${getLabelForEmoji(c.emoji)}</div>`;
-        btn.addEventListener('click', ()=> handleChoice(c, item, btn));
-        optionsEl.appendChild(btn);
-      });
+function renderQuestion(){
+  answered = false;
+  statusDiv.textContent = '';
+  nextBtn.classList.add('hidden');
+  const q = lessons[order[idx]];
+  // shuffle choices
+  const ch = shuffle(q.choices.slice());
+  optionsDiv.innerHTML = '';
+  ch.forEach(c=>{
+    const b = document.createElement('div');
+    b.className='opt';
+    b.textContent = c;
+    b.addEventListener('click', ()=> selectOption(b, q.word));
+    optionsDiv.appendChild(b);
+  });
+  // auto play the word once when question renders
+  setTimeout(()=> speak(q.word), 300);
+}
 
-      speak(item.verb);
-    }
-
-    function handleChoice(choice, correctItem, btn){
-      if(choice.emoji === correctItem.emoji){
-        score += 1;
-        scoreEl.textContent = score;
-        showFeedback('Correct! Good job!', true);
-        btn.style.boxShadow = `0 8px 24px rgba(0,0,0,0.12)`;
-        btn.style.border = `3px solid var(--correct)`;
-        speak('Well done!');
-        disableOptions();
-      } else {
-        showFeedback('Wrong -- try again', false);
-        speak('Try again');
-        btn.animate([{transform:'scale(1)'},{transform:'scale(0.95)'},{transform:'scale(1)'}],{duration:220});
-      }
-    }
-
-    function disableOptions(){
-      const bs = optionsEl.querySelectorAll('button');
-      bs.forEach(b=>b.disabled = true);
-    }
-
-    function enableOptions(){
-      const bs = optionsEl.querySelectorAll('button');
-      bs.forEach(b=>b.disabled = false);
-    }
-
-    function showFeedback(text, good){
-      feedbackEl.textContent = text;
-      feedbackEl.style.background = good ? 'var(--correct)' : 'var(--wrong)';
-      feedbackEl.classList.remove('hidden');
-    }
-
-    playBtn.addEventListener('click', ()=>{
-      const idx = order[round];
-      speak(WORDS[idx].verb);
+function selectOption(elem, correct){
+  if(answered) return;
+  answered = true;
+  const chosen = elem.textContent;
+  if(chosen === correct){
+    elem.style.borderColor = '#10b981';
+    statusDiv.textContent = 'बरोबर!';
+    playTone('success');
+    score++;
+    scoreSpan.textContent = score;
+  } else {
+    elem.style.borderColor = '#ef4444';
+    statusDiv.textContent = 'चुकीचे -- योग्य उत्तर: ' + correct;
+    playTone('fail');
+    // highlight correct option
+    Array.from(document.querySelectorAll('.opt')).forEach(o=>{
+      if(o.textContent === correct){ o.style.borderColor='#10b981'; }
     });
+  }
+  if(idx < order.length - 1){
+    nextBtn.classList.remove('hidden');
+  } else {
+    // end of quiz
+    statusDiv.textContent += ' -- खेळ पूर्ण. पुनः सुरुवात बटण दाबा.';
+  }
+}
 
-    nextBtn.addEventListener('click', ()=>{
-      round++;
-      if(round >= totalRounds){
-        showFinal();
-        return;
-      }
-      enableOptions();
-      startRound();
-    });
+playBtn.addEventListener('click', ()=>{
+  const q = lessons[order[idx]];
+  speak(q.word);
+});
 
-    showAnswerBtn.addEventListener('click', ()=>{
-      const idx = order[round];
-      const correct = WORDS[idx];
-      const bs = optionsEl.querySelectorAll('button');
-      bs.forEach(b=>{
-        if(b.innerHTML.includes(correct.emoji)){
-          b.style.border = `3px solid var(--accent)`;
-        }
-      });
-      speak(correct.verb);
-    });
+repeatBtn.addEventListener('click', ()=>{
+  const q = lessons[order[idx]];
+  speak(q.word);
+});
 
-    function showFinal(){
-      verbText.textContent = '🎉 Game Over';
-      feedbackEl.classList.remove('hidden');
-      feedbackEl.style.background = '#333';
-      feedbackEl.textContent = `Your score: ${score} / ${totalRounds}`;
-      optionsEl.innerHTML = `<div style="padding:20px;text-align:center">Click <strong>Restart</strong> to play again.</div>`;
-      nextBtn.textContent = 'Restart';
-      nextBtn.addEventListener('click', ()=>location.reload());
-    }
+nextBtn.addEventListener('click', ()=>{
+  if(idx < order.length -1){ idx++; renderQuestion(); }
+});
 
-    // speak() function is now designed for MIT App Inventor integration
-    function speak(text){
-      // In MIT App Inventor, replace this with calling the TextToSpeech component
-      // Example: window.AppInventor.setWebViewString(text);
-      if(window.AppInventor){
-        window.AppInventor.setWebViewString(text);
-      } else {
-        // fallback: browser TTS
-        try{
-          const utter = new SpeechSynthesisUtterance(text);
-          utter.rate = 0.95; utter.pitch = 1.05; utter.lang = 'en-US';
-          speechSynthesis.cancel();
-          speechSynthesis.speak(utter);
-        }catch(e){console.warn('No TTS',e);}
-      }
-    }
+restartBtn.addEventListener('click', ()=>{
+  order = shuffle(Array.from({length:lessons.length},(_,i)=>i));
+  idx = 0; score = 0; scoreSpan.textContent = score;
+  renderQuestion();
+});
 
-    function shuffle(arr){
-      for(let i=arr.length-1;i>0;i--){
-        const r = Math.floor(Math.random()*(i+1));
-        [arr[i],arr[r]]=[arr[r],arr[i]];
-      }
-      return arr;
-    }
+// initialize
+renderQuestion();
 
-    function getLabelForEmoji(e){
-      const map = {
-        '🤸‍♂️':'jump','🏃‍♀️':'run','👏':'clap','🍽️':'eat','😴':'sleep','🏊‍♂️':'swim','💃':'dance','✍️':'write','🖍️':'draw','🎤':'sing','🪑':'sit','😂':'laugh'
-      };
-      return map[e] || '';
-    }
-
-    startRound();
-  </script></body>
+</script></body>
 </html>
