@@ -1,0 +1,217 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!doctype html>
+
+<html lang="mr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Action Verbs -- Emoji Match (Grade 1)</title>
+  <style>
+    :root{--bg:#f5f7fb;--card:#ffffff;--accent:#4a90e2;--correct:#28a745;--wrong:#e34850}
+    body{font-family: 'Segoe UI', Roboto, Arial, sans-serif;background:var(--bg);margin:0;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px}
+    .container{max-width:920px;width:100%}
+    header{display:flex;justify-content:space-between;align-items:center}
+    h1{font-size:1.6rem;margin:0;color:#133;}
+    .controls{display:flex;gap:8px;align-items:center}
+    button, .emoji-btn{cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-size:16px;background:var(--card);box-shadow:0 6px 14px rgba(10,20,40,0.06)}
+    .play-btn{background:linear-gradient(180deg,var(--accent),#356fc3);color:#fff}
+    .panel{background:var(--card);padding:18px;border-radius:14px;box-shadow:0 6px 18px rgba(10,20,40,0.06)}
+    .verb-area{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px}
+    .round{font-weight:700;color:#444}
+    .big-verb{font-size:2.8rem;font-weight:800}
+    .options{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;width:100%;padding:12px}
+    .emoji-btn{font-size:34px;padding:20px;background:linear-gradient(180deg,#fff,#f6f8ff);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:110px}
+    .emoji-label{font-size:14px;margin-top:8px;color:#333}
+    .status{height:36px;display:flex;align-items:center;gap:10px}
+    .score{font-weight:700}
+    .feedback{padding:12px;border-radius:10px;color:#fff;display:inline-block}
+    .hidden{display:none}
+    footer{font-size:13px;color:#666}
+    @media (max-width:520px){.big-verb{font-size:2rem}.emoji-btn{font-size:28px;padding:14px;min-height:92px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Action Verbs -- Emoji Match (Grade 1)</h1>
+      <div class="controls">
+        <button id="play" class="play-btn">▶ Play Verb</button>
+        <button id="showAnswer">Show Answer</button>
+        <button id="next">Next</button>
+      </div>
+    </header><main class="panel">
+  <div class="verb-area">
+    <div class="round">Round <span id="roundNo">1</span> / <span id="totalRounds">12</span></div>
+    <div class="big-verb" id="verbText">--</div>
+    <div class="status">
+      <div class="score">Score: <span id="score">0</span></div>
+      <div id="feedback" class="feedback hidden"></div>
+    </div>
+  </div>
+
+  <div class="options" id="options"></div>
+</main>
+
+<footer>
+  Instructions: Click <strong>Play Verb</strong> to hear the verb. Tap the emoji that matches the action. Correct -- you'll hear praise and get a point. Wrong -- try again. Works in MIT App Inventor with TextToSpeech component (see blocks).
+</footer>
+
+  </div>  <script>
+    // Word bank: verb -> emoji choices
+    const WORDS = [
+      {verb:'jump', emoji:'🤸‍♂️'},
+      {verb:'run', emoji:'🏃‍♀️'},
+      {verb:'clap', emoji:'👏'},
+      {verb:'eat', emoji:'🍽️'},
+      {verb:'sleep', emoji:'😴'},
+      {verb:'swim', emoji:'🏊‍♂️'},
+      {verb:'dance', emoji:'💃'},
+      {verb:'write', emoji:'✍️'},
+      {verb:'draw', emoji:'🖍️'},
+      {verb:'sing', emoji:'🎤'},
+      {verb:'sit', emoji:'🪑'},
+      {verb:'laugh', emoji:'😂'}
+    ];
+
+    let order = shuffle(Array.from({length:WORDS.length},(_,i)=>i));
+    let round = 0; let score = 0; const totalRounds = WORDS.length;
+
+    const playBtn = document.getElementById('play');
+    const optionsEl = document.getElementById('options');
+    const verbText = document.getElementById('verbText');
+    const roundNo = document.getElementById('roundNo');
+    const totalRoundsEl = document.getElementById('totalRounds');
+    const scoreEl = document.getElementById('score');
+    const feedbackEl = document.getElementById('feedback');
+    const nextBtn = document.getElementById('next');
+    const showAnswerBtn = document.getElementById('showAnswer');
+
+    totalRoundsEl.textContent = totalRounds;
+
+    function startRound(){
+      feedbackEl.classList.add('hidden');
+      const idx = order[round];
+      const item = WORDS[idx];
+      verbText.textContent = item.verb;
+      roundNo.textContent = round+1;
+
+      const distractors = WORDS.filter((_,i)=>i!==idx).slice();
+      shuffle(distractors);
+      const choices = [item, distractors[0], distractors[1], distractors[2]];
+      shuffle(choices);
+
+      optionsEl.innerHTML = '';
+      choices.forEach(c=>{
+        const btn = document.createElement('button');
+        btn.className = 'emoji-btn';
+        btn.innerHTML = `<div class="emoji">${c.emoji}</div><div class="emoji-label">${getLabelForEmoji(c.emoji)}</div>`;
+        btn.addEventListener('click', ()=> handleChoice(c, item, btn));
+        optionsEl.appendChild(btn);
+      });
+
+      speak(item.verb);
+    }
+
+    function handleChoice(choice, correctItem, btn){
+      if(choice.emoji === correctItem.emoji){
+        score += 1;
+        scoreEl.textContent = score;
+        showFeedback('Correct! Good job!', true);
+        btn.style.boxShadow = `0 8px 24px rgba(0,0,0,0.12)`;
+        btn.style.border = `3px solid var(--correct)`;
+        speak('Well done!');
+        disableOptions();
+      } else {
+        showFeedback('Wrong -- try again', false);
+        speak('Try again');
+        btn.animate([{transform:'scale(1)'},{transform:'scale(0.95)'},{transform:'scale(1)'}],{duration:220});
+      }
+    }
+
+    function disableOptions(){
+      const bs = optionsEl.querySelectorAll('button');
+      bs.forEach(b=>b.disabled = true);
+    }
+
+    function enableOptions(){
+      const bs = optionsEl.querySelectorAll('button');
+      bs.forEach(b=>b.disabled = false);
+    }
+
+    function showFeedback(text, good){
+      feedbackEl.textContent = text;
+      feedbackEl.style.background = good ? 'var(--correct)' : 'var(--wrong)';
+      feedbackEl.classList.remove('hidden');
+    }
+
+    playBtn.addEventListener('click', ()=>{
+      const idx = order[round];
+      speak(WORDS[idx].verb);
+    });
+
+    nextBtn.addEventListener('click', ()=>{
+      round++;
+      if(round >= totalRounds){
+        showFinal();
+        return;
+      }
+      enableOptions();
+      startRound();
+    });
+
+    showAnswerBtn.addEventListener('click', ()=>{
+      const idx = order[round];
+      const correct = WORDS[idx];
+      const bs = optionsEl.querySelectorAll('button');
+      bs.forEach(b=>{
+        if(b.innerHTML.includes(correct.emoji)){
+          b.style.border = `3px solid var(--accent)`;
+        }
+      });
+      speak(correct.verb);
+    });
+
+    function showFinal(){
+      verbText.textContent = '🎉 Game Over';
+      feedbackEl.classList.remove('hidden');
+      feedbackEl.style.background = '#333';
+      feedbackEl.textContent = `Your score: ${score} / ${totalRounds}`;
+      optionsEl.innerHTML = `<div style="padding:20px;text-align:center">Click <strong>Restart</strong> to play again.</div>`;
+      nextBtn.textContent = 'Restart';
+      nextBtn.addEventListener('click', ()=>location.reload());
+    }
+
+    // speak() function is now designed for MIT App Inventor integration
+    function speak(text){
+      // In MIT App Inventor, replace this with calling the TextToSpeech component
+      // Example: window.AppInventor.setWebViewString(text);
+      if(window.AppInventor){
+        window.AppInventor.setWebViewString(text);
+      } else {
+        // fallback: browser TTS
+        try{
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.rate = 0.95; utter.pitch = 1.05; utter.lang = 'en-US';
+          speechSynthesis.cancel();
+          speechSynthesis.speak(utter);
+        }catch(e){console.warn('No TTS',e);}
+      }
+    }
+
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){
+        const r = Math.floor(Math.random()*(i+1));
+        [arr[i],arr[r]]=[arr[r],arr[i]];
+      }
+      return arr;
+    }
+
+    function getLabelForEmoji(e){
+      const map = {
+        '🤸‍♂️':'jump','🏃‍♀️':'run','👏':'clap','🍽️':'eat','😴':'sleep','🏊‍♂️':'swim','💃':'dance','✍️':'write','🖍️':'draw','🎤':'sing','🪑':'sit','😂':'laugh'
+      };
+      return map[e] || '';
+    }
+
+    startRound();
+  </script></body>
+</html>
